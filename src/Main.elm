@@ -43,21 +43,21 @@ type alias Tables =
 
 
 type alias Planet =
-    { namePrefix : Maybe String
-    , nameSuffix : Maybe String
-    , atmosphere : Maybe String
-    , biosphere : Maybe String
-    , population : Maybe String
+    { namePrefix : String
+    , nameSuffix : String
+    , atmosphere : String
+    , biosphere : String
+    , population : String
     , isSecondary : Bool
-    , firstWorldTag : Maybe String
-    , secondWorldTag : Maybe String
-    , tradeTag : Maybe String
-    , tech : Maybe String
-    , temperature : Maybe String
-    , trade : Maybe String
-    , origin : Maybe String
-    , relationship : Maybe String
-    , contact : Maybe String
+    , firstWorldTag : String
+    , secondWorldTag : String
+    , tradeTag : String
+    , tech : String
+    , temperature : String
+    , trade : String
+    , origin : String
+    , relationship : String
+    , contact : String
     }
 
 
@@ -105,21 +105,21 @@ init _ =
 initModel : Model
 initModel =
     { planet =
-        { namePrefix = Nothing
-        , nameSuffix = Nothing
-        , atmosphere = Nothing
-        , biosphere = Nothing
-        , population = Nothing
+        { namePrefix = ""
+        , nameSuffix = ""
+        , atmosphere = "ROLL"
+        , biosphere = "ROLL"
+        , population = "ROLL"
         , isSecondary = False
-        , firstWorldTag = Nothing
-        , secondWorldTag = Nothing
-        , tradeTag = Nothing
-        , tech = Nothing
-        , temperature = Nothing
-        , trade = Nothing
-        , origin = Nothing
-        , relationship = Nothing
-        , contact = Nothing
+        , firstWorldTag = "ROLL"
+        , secondWorldTag = "ROLL"
+        , tradeTag = "ROLL"
+        , tech = "ROLL"
+        , temperature = "ROLL"
+        , trade = "ROLL"
+        , origin = "ROLL"
+        , relationship = "ROLL"
+        , contact = "ROLL"
         }
     , tables = Tables [] [] [] [] [] [] [] [] [] [] [] []
     , rolls = []
@@ -141,25 +141,23 @@ getAllData cmd =
 type Msg
     = GetAllData
     | GotTables (Result Http.Error Tables)
-    | PickFromList (List String) (Maybe String -> Msg)
-    | RollDice Int Int (Cmd Msg)
-    | SetRoll (Cmd Msg) (List Int)
+    | PickFromList (List String) (String -> Msg)
     | RollPlanet
     | SetSecondary Bool
-    | GetFirstWorldTag (Maybe String)
-    | GetSecondWorldTag (Maybe String)
-    | GetTradeTag (Maybe String)
-    | GetAtmosphere (Maybe String)
-    | GetTemperature (Maybe String)
-    | GetBiosphere (Maybe String)
-    | GetPopulation (Maybe String)
-    | GetTechLevel (Maybe String)
-    | GetOrigin (Maybe String)
-    | GetRelationship (Maybe String)
-    | GetContactPoint (Maybe String)
+    | GetFirstWorldTag String
+    | GetSecondWorldTag String
+    | GetTradeTag String
+    | GetAtmosphere String
+    | GetTemperature String
+    | GetBiosphere String
+    | GetPopulation String
+    | GetTechLevel String
+    | GetOrigin String
+    | GetRelationship String
+    | GetContactPoint String
     | GetFullName
-    | GetNamePrefix (Maybe String)
-    | GetNameSuffix (Maybe String)
+    | GetNamePrefix String
+    | GetNameSuffix String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -177,13 +175,7 @@ update msg model =
                     ( { model | tables = data }, Cmd.none )
 
         PickFromList traitList callback ->
-            ( model, generate callback (RX.sample traitList) )
-
-        RollDice dice faces callback ->
-            ( model, generate (SetRoll callback) (rollMultiDice dice faces) )
-
-        SetRoll callback results ->
-            ( { model | rolls = results }, callback )
+            ( model, generate (\x -> x |> Maybe.withDefault "" |> callback) (traitList |> RX.sample) )
 
         RollPlanet ->
             let
@@ -342,7 +334,7 @@ asCmdMsg msg =
 -- VIEW
 
 
-clickFn : List String -> (Maybe String -> Msg) -> Msg
+clickFn : List String -> (String -> Msg) -> Msg
 clickFn traitList msg =
     PickFromList traitList msg
 
@@ -351,19 +343,18 @@ view : Model -> Html Msg
 view model =
     let
         planetName =
-            case ( model.planet.namePrefix, model.planet.nameSuffix ) of
-                ( Just pre, Just suf ) ->
-                    pre ++ suf
+            if model.planet.namePrefix == "" || model.planet.nameSuffix == "" then
+                "ROLL"
 
-                _ ->
-                    "ROLL"
+            else
+                model.planet.namePrefix ++ model.planet.nameSuffix
 
         tagsWithoutCurrent =
             model.tables.tags
                 |> LX.dropWhile
                     (\t ->
-                        [ model.planet.firstWorldTag |> Maybe.withDefault ""
-                        , model.planet.secondWorldTag |> Maybe.withDefault ""
+                        [ model.planet.firstWorldTag
+                        , model.planet.secondWorldTag
                         ]
                             |> List.member t
                     )
@@ -382,47 +373,47 @@ view model =
                 [ h2 [] [ text "World Tags" ]
                 , button
                     [ onClick (PickFromList tagsWithoutCurrent GetFirstWorldTag) ]
-                    [ text (model.planet.firstWorldTag |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.firstWorldTag ]
                 , br [] []
                 , button
                     [ onClick (PickFromList tagsWithoutCurrent GetSecondWorldTag) ]
-                    [ text (model.planet.secondWorldTag |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.secondWorldTag ]
                 ]
             , div []
                 [ h2 [] [ text "Trade Tag" ]
                 , button
                     [ onClick (PickFromList model.tables.trade GetTradeTag) ]
-                    [ text (model.planet.tradeTag |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.tradeTag ]
                 ]
             , div []
                 [ h2 [] [ text "Atmosphere" ]
                 , button
                     [ onClick (PickFromList model.tables.atmosphere GetAtmosphere) ]
-                    [ text (model.planet.atmosphere |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.atmosphere ]
                 ]
             , div []
                 [ h2 [] [ text "Temperature" ]
                 , button
                     [ onClick (PickFromList model.tables.temperature GetTemperature) ]
-                    [ text (model.planet.temperature |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.temperature ]
                 ]
             , div []
                 [ h2 [] [ text "Biosphere" ]
                 , button
                     [ onClick (PickFromList model.tables.biosphere GetBiosphere) ]
-                    [ text (model.planet.biosphere |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.biosphere ]
                 ]
             , div []
                 [ h2 [] [ text "Population" ]
                 , button
                     [ onClick (PickFromList model.tables.population GetPopulation) ]
-                    [ text (model.planet.population |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.population ]
                 ]
             , div []
                 [ h2 [] [ text "Tech Level" ]
                 , button
                     [ onClick (PickFromList model.tables.tech GetTechLevel) ]
-                    [ text (model.planet.tech |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.tech ]
                 ]
             ]
         , hr [ class "divider" ] []
@@ -432,19 +423,19 @@ view model =
                 [ h2 [] [ text "Origin" ]
                 , button
                     [ onClick (PickFromList model.tables.origin GetOrigin) ]
-                    [ text (model.planet.origin |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.origin ]
                 ]
             , div []
                 [ h2 [] [ text "Relationship w/ Primary" ]
                 , button
                     [ onClick (PickFromList model.tables.relationship GetRelationship) ]
-                    [ text (model.planet.relationship |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.relationship ]
                 ]
             , div []
                 [ h2 [] [ text "Contact Point w/ Primary" ]
                 , button
                     [ onClick (PickFromList model.tables.contact GetContactPoint) ]
-                    [ text (model.planet.contact |> Maybe.withDefault "ROLL") ]
+                    [ text model.planet.contact ]
                 ]
             ]
         ]
