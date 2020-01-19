@@ -89,7 +89,6 @@ decodeTableData =
 type alias Model =
     { planet : Planet
     , tables : Tables
-    , rolls : List Int
     }
 
 
@@ -122,7 +121,6 @@ initModel =
         , contact = "ROLL"
         }
     , tables = Tables [] [] [] [] [] [] [] [] [] [] [] []
-    , rolls = []
     }
 
 
@@ -309,22 +307,6 @@ update msg model =
 -- UPDATE FUNCTIONS
 
 
-rollDice : Int -> Random.Generator Int
-rollDice faces =
-    Random.int 0 faces
-
-
-rollMultiDice : Int -> Int -> Random.Generator (List Int)
-rollMultiDice dice faces =
-    Random.list dice (Random.int 1 faces)
-
-
-rollWithSumOn : List String -> Model -> Maybe String
-rollWithSumOn table model =
-    table
-        |> LX.getAt (List.sum model.rolls)
-
-
 asCmdMsg : Msg -> Cmd Msg
 asCmdMsg msg =
     Task.succeed identity |> Task.perform (\_ -> msg)
@@ -332,11 +314,6 @@ asCmdMsg msg =
 
 
 -- VIEW
-
-
-clickFn : List String -> (String -> Msg) -> Msg
-clickFn traitList msg =
-    PickFromList traitList msg
 
 
 view : Model -> Html Msg
