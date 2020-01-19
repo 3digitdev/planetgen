@@ -1,0 +1,14 @@
+World Generation:
+    1) Tags
+        1a) 2 World Tags (2d100)
+        1b) 1 Trade Tag (1d24)
+    2) Atmosphere (2d6)
+    3) Temperature (2d6)
+    4) Biosphere (2d6)
+    5) Population (2d6)
+    6) Tech Level (2d6)
+    7) IF SECONDARY WORLD:
+        7a) Origin (1d8)
+        7b) Relationship (1d8)
+        7c) Contact Point (1d8)
+    7) Name
